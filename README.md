@@ -3,7 +3,7 @@
 
 Ever play Captain and wonder where your beacons and airstrikes come from? No? This mod adds the UES Safe Travels to the skybox when playing as Captain anyway.
 
-Mod by swuff★. 
+Mod by [swuff★](https://ko-fi.com/swuff). 
 Special thanks to iDeathHD for fixing R2API's SceneAssetAPI thus making this mod possible.
 
 ### Patch Notes
