@@ -30,6 +30,7 @@ namespace CaptainSkyboxPlugin
             CharacterBody.onBodyStartGlobal += BodyStartGlobal;
         }
 
+        //first object in rootobjects is holder for objects enabled for escape sequence; dig through those and get the ship
         private void OnMoonSceneLoaded(GameObject[] rootObjects)
         {
             GameObject esc = rootObjects[0];
@@ -47,6 +48,7 @@ namespace CaptainSkyboxPlugin
                             GameObject managerObject = new GameObject("ColonyShipManager");
                             shipManager = managerObject.AddComponent<ColonyShipManager>();
                         }
+                        //tell shipmanager to setup the ship using the found object
                         shipManager.SetColonyShip(csh.gameObject);
                     }
                 }
@@ -57,19 +59,21 @@ namespace CaptainSkyboxPlugin
         {
             if (!NetworkServer.active)
                 return;
-
+            //are you a captain?
             if (body.baseNameToken == "CAPTAIN_BODY_NAME")
             {
-                Debug.Log("SafeTravelsInSkybox : Good morning, Captain.");
+                //Debug.Log("SafeTravelsInSkybox : Good morning, Captain.");
+                //check if a ship already exists.
                 GameObject colonyShip = GameObject.Find("ColonyShipHolderStage(Clone)");
                 if (colonyShip == null)
                 {
-                    Debug.Log("SafeTravelsInSkybox : Deploying UES Safe Travels to " + SceneManager.GetActiveScene().name + " . . .");
-
+                    //Debug.Log("SafeTravelsInSkybox : Deploying UES Safe Travels to " + SceneManager.GetActiveScene().name + " . . .");
+                    //if there's no ship, start calling one - begin by checking there's a shipmanager to get a ship from.
                     ColonyShipManager shipManager = FindObjectOfType<ColonyShipManager>();
 
                     if (shipManager != null)
                     {
+                        //getting ready to call ship...
                         var position = Vector3.zero;
                         var rotation = Quaternion.Euler(-90, 0, 0);
                         var currScene = SceneManager.GetActiveScene().name;
@@ -78,6 +82,7 @@ namespace CaptainSkyboxPlugin
                         //could also probably also just define these in a better order to be one switch statement
                         //again, cba
 
+                        //define a specific location based on scene-name
                         switch (currScene)
                         {
                             case "golemplains":
@@ -158,9 +163,11 @@ namespace CaptainSkyboxPlugin
                                 break;
                         }
 
+                        //call ship, set it to active
                         var shipScenePrefab = Instantiate(shipManager.ColonyShip, position, rotation);
                         shipScenePrefab.SetActive(true);
 
+                        //re-scale ship
                         switch (currScene)
                         {
                             case "golemplains":
@@ -236,6 +243,7 @@ namespace CaptainSkyboxPlugin
 
         private void Awake()
         {
+            //kill self if not original instance of script
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -247,11 +255,14 @@ namespace CaptainSkyboxPlugin
 
         public void SetColonyShip(GameObject ship)
         {
+            //clone the ship model; it gets unloaded later, so we can't just make a reference
             ColonyShip = Instantiate(ship);
+            //and quickly double check we did indeed get it correctly...
             if (ColonyShip == null)
                 Debug.Log("failed to instantiate colonyship clone; please send a log to swuff★#2224 :(");
             else
             {
+                //modify prefab - notably, DontDestroyOnLoad it so it persists
                 ColonyShip.name = ship.name + "Stage";
                 ColonyShip.SetActive(false);
                 DontDestroyOnLoad(ColonyShip);
