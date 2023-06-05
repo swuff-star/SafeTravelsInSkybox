@@ -1,4 +1,6 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
+using EntityStates.BrotherMonster;
 using R2API;
 using RoR2;
 using System;
@@ -17,7 +19,10 @@ namespace CaptainSkyboxPlugin
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "swuff";
         public const string PluginName = "SafeTravelsInSkybox";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
+
+        public static ConfigEntry<bool> UES { get; set; }
+        public static ConfigEntry<bool> All { get; set; }
 
         private string sceneName = "moon";
 
@@ -28,6 +33,23 @@ namespace CaptainSkyboxPlugin
         {
             SceneAssetAPI.AddAssetRequest(sceneName, OnMoonSceneLoaded);
             CharacterBody.onBodyStartGlobal += BodyStartGlobal;
+        }
+
+        public void Awake()
+        {
+            UES = Config.Bind<bool>(
+                "Enable for all UES?",
+                "Enabled",
+                false,
+                "Deploys the UES Safe Travels to support any survivors which deploy from a drop pod or shipping container."
+                );
+
+            All = Config.Bind<bool>(
+                "Enable for all?",
+                "Enabled",
+                false,
+                "Deploys the UES Safe Travels to support every survivor unconditionally."
+                );
         }
 
         //first object in rootobjects is holder for objects enabled for escape sequence; dig through those and get the ship
@@ -59,8 +81,22 @@ namespace CaptainSkyboxPlugin
         {
             if (!NetworkServer.active)
                 return;
-            //are you a captain?
-            if (body.baseNameToken == "CAPTAIN_BODY_NAME")
+
+            bool isCaptain = body.baseNameToken == "CAPTAIN_BODY_NAME";
+
+            bool isUES = false;
+            if (UES.Value == true)
+            {
+                //check this first, so we aren't running getcomponent twice every time a monster or ally spawns
+                if (body.isPlayerControlled)
+                {
+                    if (body.preferredPodPrefab == RoR2Content.Survivors.Commando.bodyPrefab.GetComponent<CharacterBody>().preferredPodPrefab || body.preferredPodPrefab == RoR2Content.Survivors.Toolbot.bodyPrefab.GetComponent<CharacterBody>().preferredPodPrefab)
+                        isUES = true;
+                }
+            }
+
+            //are you a captain, or if UES is enabled are you a UES member, or should is config set to apply to all survivors?
+            if (isCaptain || isUES || All.Value == true)
             {
                 //Debug.Log("SafeTravelsInSkybox : Good morning, Captain.");
                 //check if a ship already exists.
@@ -259,7 +295,7 @@ namespace CaptainSkyboxPlugin
             ColonyShip = Instantiate(ship);
             //and quickly double check we did indeed get it correctly...
             if (ColonyShip == null)
-                Debug.Log("failed to instantiate colonyship clone; please send a log to swuff★#2224 :(");
+                Debug.Log("SafeTravelsInSkybox : No signal received from UES Safe Travels! Please contact swuff★#2224 or report this on the mod's GitHub page.");
             else
             {
                 //modify prefab - notably, DontDestroyOnLoad it so it persists

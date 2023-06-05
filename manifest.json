@@ -1,7 +1,7 @@
 {
     "name": "SafeTravelsInSkybox",
     "author": "swuff",
-    "version_number": "1.0.0",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/swuff-star/SafeTravelsInSkybox/",
     "description": "Adds the UES Safe Travels in the sky while playing as Captain.",
     "dependencies": [
