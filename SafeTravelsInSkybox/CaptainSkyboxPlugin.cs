@@ -19,7 +19,7 @@ namespace CaptainSkyboxPlugin
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "swuff";
         public const string PluginName = "SafeTravelsInSkybox";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.1.1";
 
         public static ConfigEntry<bool> UES { get; set; }
         public static ConfigEntry<bool> All { get; set; }
@@ -262,6 +262,9 @@ namespace CaptainSkyboxPlugin
                                 break;
                             case "drybasin":
                                 shipScenePrefab.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                                break;
+                            default:
+                                shipScenePrefab.transform.localScale = Vector3.zero;
                                 break;
                         }
                     }
